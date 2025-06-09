@@ -4,79 +4,66 @@ import "./App.css";
 const SALE_AMOUNT = 800_000_000;
 const LIQUIDITY_AMOUNT = 200_000_000;
 
-function calcParameters(virtualBaseAmount: number, raiseAmount: number) {
+function calculateVirtualQuoteAmount(
+	virtualBaseAmount: number,
+	raiseAmount: number
+) {
 	return ((virtualBaseAmount + raiseAmount) * LIQUIDITY_AMOUNT) / raiseAmount;
 }
 
 function calculateAmountOut(
+	K: number,
 	amountIn: number,
 	currentRaise: number,
-	tokenSaleLeft: number,
 	virtualBaseAmount: number,
 	virtualQuoteAmount: number
 ) {
-	const K =
-		(currentRaise + virtualBaseAmount) * (tokenSaleLeft + virtualQuoteAmount);
-	const newX = currentRaise + amountIn + virtualBaseAmount;
-	const newY = K / newX;
-	const newTokenSaleLeft = newY - virtualQuoteAmount;
-	console.log(newTokenSaleLeft);
-	if (tokenSaleLeft < newTokenSaleLeft) {
-		throw new Error("Some thing fail");
-	}
-	return tokenSaleLeft - newTokenSaleLeft;
+	const tokenSaleLeftBefore =
+		K / (currentRaise + virtualBaseAmount) - virtualQuoteAmount;
+	const tokenSaleLeftNew =
+		K / (currentRaise + amountIn + virtualBaseAmount) - virtualQuoteAmount;
+	return tokenSaleLeftBefore - tokenSaleLeftNew;
 }
 
 function App() {
-	const [virtualBaseAmount, setVirtualBaseAmount] = useState<string>("");
+	const [virtualBaseAmount, setVirtualBaseAmount] = useState<string>("10");
 	const [currentRaise, setCurrentRaise] = useState<string>("0");
-	const [amountIn, setAmountIn] = useState<string>("");
-	const [virtualQuoteAmount, setVirtualQuoteAmount] = useState<number | null>(
-		null
+	const [amountIn, setAmountIn] = useState<string>("0");
+	const [targetRaiseAmount, setTargetRaiseAmount] = useState<string>("10");
+	const [virtualQuoteAmount, setVirtualQuoteAmount] = useState<string>(
+		calculateVirtualQuoteAmount(Number(virtualBaseAmount), Number(targetRaiseAmount)).toString()
 	);
-	const [amountOut, setAmountOut] = useState<number | null>(null);
-	const [targetRaiseAmount, setTargetRaiseAmount] = useState<string>("");
-	const [tokenSaleLeft, setTokenSaleLeft] = useState<string>(
-		SALE_AMOUNT.toString()
+	const [amountOut, setAmountOut] = useState<string>("0");
+	const [canCoverCurve, setCanCoverCurve] = useState<boolean>(false);
+	
+	const [K, setK] = useState<number>(
+		Number(virtualBaseAmount) * (SALE_AMOUNT + Number(virtualQuoteAmount))
 	);
-
-	const handleCalculate = () => {
-		const baseAmount = parseFloat(virtualBaseAmount);
-		const raise = parseFloat(currentRaise);
-
-		if (!isNaN(baseAmount) && !isNaN(raise)) {
-			const virtualQuoteAmount = calcParameters(
-				baseAmount,
-				parseFloat(targetRaiseAmount)
-			);
-			setVirtualQuoteAmount(virtualQuoteAmount);
-
-			if (amountIn) {
-				const out = calculateAmountOut(
-					parseFloat(amountIn),
-					raise,
-					parseFloat(tokenSaleLeft),
-					parseFloat(virtualBaseAmount),
-					virtualQuoteAmount
-				);
-				setAmountOut(out);
-			}
-		}
-	};
+	const [tokenSaleLeft, setTokenSaleLeft] = useState<number>(SALE_AMOUNT);
 
 	useEffect(() => {
-		if (currentRaise && amountIn && virtualBaseAmount && virtualQuoteAmount) {
-			const K =
-				parseFloat(virtualBaseAmount) * (SALE_AMOUNT + virtualQuoteAmount);
-			const tokenSaleLeft =
-				K / (parseFloat(currentRaise) + parseFloat(virtualBaseAmount)) -
-				virtualQuoteAmount;
-			setTokenSaleLeft(tokenSaleLeft.toString());
-		}
-	}, [currentRaise, amountIn, virtualBaseAmount, virtualQuoteAmount]);
+		setVirtualQuoteAmount(
+			calculateVirtualQuoteAmount(Number(virtualBaseAmount), Number(targetRaiseAmount)).toString()
+		);
+		setK(Number(virtualBaseAmount) * (SALE_AMOUNT + Number(virtualQuoteAmount)));
+	}, [virtualBaseAmount, targetRaiseAmount, virtualQuoteAmount]);
 
-	const progress =
-		(parseFloat(currentRaise) / parseFloat(targetRaiseAmount)) * 100 || 0;
+	useEffect(() => {
+		setAmountOut(calculateAmountOut(K, Number(amountIn), Number(currentRaise), Number(virtualBaseAmount), Number(virtualQuoteAmount)).toString());
+	}, [K, amountIn, currentRaise, virtualBaseAmount, virtualQuoteAmount]);
+
+	useEffect(() => {
+		console.log(virtualQuoteAmount, SALE_AMOUNT, virtualBaseAmount);
+		const tokenSaleLeft = K / (Number(currentRaise) + Number(virtualBaseAmount)) - Number(virtualQuoteAmount);
+		setTokenSaleLeft(tokenSaleLeft);
+	}, [K, currentRaise, virtualBaseAmount, virtualQuoteAmount]);
+
+	useEffect(() => {
+		const amountOut = calculateAmountOut(K, Number(targetRaiseAmount) - Number(currentRaise), Number(currentRaise), Number(virtualBaseAmount), Number(virtualQuoteAmount));
+		setCanCoverCurve(amountOut >= tokenSaleLeft);
+	}, [amountOut, virtualQuoteAmount, currentRaise, virtualBaseAmount, K, tokenSaleLeft]);
+
+	const progress = (Number(currentRaise) / Number(targetRaiseAmount)) * 100 || 0;
 
 	return (
 		<div className="container">
@@ -145,15 +132,15 @@ function App() {
 				</label>
 			</div>
 
-			<button onClick={handleCalculate}>Calculate</button>
-
-			{virtualQuoteAmount !== null && (
-				<div className="result">
-					<h2>Results:</h2>
-					<p>Virtual Quote Amount: {virtualQuoteAmount.toFixed(10)}</p>
-					{amountOut !== null && <p>Amount Out: {amountOut.toFixed(10)}</p>}
-				</div>
-			)}
+			
+			<div className="result">
+				<h2>Results:</h2>
+				<div>Formula: (x + {virtualBaseAmount}) * (y + {virtualQuoteAmount}) = {K}</div>
+				<p>Virtual Quote Amount: {virtualQuoteAmount}</p>
+				<p>Amount Out: {amountOut}</p>
+				<p>Can cover curve: {canCoverCurve ? "Yes" : "No"}</p>
+				<p>Token sale left: {tokenSaleLeft}</p>
+		</div>
 		</div>
 	);
 }
