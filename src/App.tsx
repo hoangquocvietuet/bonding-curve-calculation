@@ -8,7 +8,7 @@ function calculateVirtualQuoteAmount(
 	virtualBaseAmount: number,
 	raiseAmount: number
 ) {
-	return ((virtualBaseAmount + raiseAmount) * LIQUIDITY_AMOUNT) / raiseAmount;
+	return Math.round((virtualBaseAmount * SALE_AMOUNT) / raiseAmount);
 }
 
 function calculateAmountOut(
@@ -140,6 +140,8 @@ function App() {
 				<p>Amount Out: {amountOut}</p>
 				<p>Can cover curve: {canCoverCurve ? "Yes" : "No"}</p>
 				<p>Token sale left: {tokenSaleLeft}</p>
+				<p>Last bonding curve price: 1 x = {Math.floor(Number(virtualQuoteAmount) / (Number(targetRaiseAmount) + Number(virtualBaseAmount)))} y</p>
+				<p>Listing price: 1 x = {Math.floor(Number(LIQUIDITY_AMOUNT) / (Number(targetRaiseAmount)))} y</p>
 		</div>
 		</div>
 	);
