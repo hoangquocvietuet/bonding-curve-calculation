@@ -43,7 +43,7 @@ function App() {
 	const [tokenSaleLeft, setTokenSaleLeft] = useState<number>(SALE_AMOUNT);
 	const [sampleData, setSampleData] = useState<{
 		actions: { user: number; type: string; amount: number; amountOut: number; currentRaise: number; tokenLeft: number; }[];
-		refundAmount: { user: number, refund: number, amountCommit: number, tokenBought: number }[];
+		refundAmount: { user: number, refund: number, amountCommit: number, tokenBought: number, averagePrice: number }[];
 	}>({
 		actions: [],
 		refundAmount: [],
@@ -76,7 +76,7 @@ function App() {
 			targetRaise: Number(targetRaiseAmount),
 			virtualBase: Number(virtualBaseAmount),
 			virtualQuote: Number(virtualQuoteAmount),
-			numberOfUsers: 10,
+			numberOfUsers: 20,
 		}));
 	}, [targetRaiseAmount, virtualBaseAmount, virtualQuoteAmount]);
 
@@ -194,6 +194,7 @@ function App() {
 							<th>Refund BNB</th>
 							<th>Token</th>
 							<th>BNB Bought</th>
+							<th>Average Price (scale 1e18)</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -203,6 +204,7 @@ function App() {
 								<td>{data.refund}</td>
 								<td>{data.amountCommit}</td>
 								<td>{data.tokenBought}</td>
+								<td>{data.averagePrice}</td>
 							</tr>
 						))}
 					</tbody>

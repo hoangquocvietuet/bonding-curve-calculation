@@ -85,20 +85,24 @@ export const generateSampleData = ({
         const token = tokenBought.get(user) || 0;
         if (token > 0) {
             const averagePrice = Math.floor(token * 10 ** 18 / amountCommit);
-            const weight = Math.floor(Math.log(token * 10 ** 18) * Math.sqrt(averagePrice));
+            const weight = Math.floor(token * Math.sqrt(averagePrice));
             weightUsers.set(user, weight);
         }
     }
     const sumWeight = Array.from(weightUsers.values()).reduce((a, b) => a + b, 0);
     console.log(currentRaise);
-    const refundAmount: { user: number, refund: number, amountCommit: number, tokenBought: number }[] = [];
+    const refundAmount: { user: number, refund: number, amountCommit: number, tokenBought: number, averagePrice: number }[] = [];
     for (const [user, weight] of weightUsers) {
         const refund = Math.floor(weight * currentRaise * 10 ** 18 / sumWeight) / 10 ** 18;
+        const amountCommit = commit.get(user) || 0;
+        const token = tokenBought.get(user) || 0;
+        const averagePrice = token * 1e18 / amountCommit;
         refundAmount.push({
             user,
             refund,
-            amountCommit: commit.get(user) || 0,
-            tokenBought: tokenBought.get(user) || 0,
+            amountCommit,
+            tokenBought: token,
+            averagePrice,
         });        
     }
 
