@@ -84,7 +84,7 @@ export const generateSampleData = ({
     for (const [user, amountCommit] of commit) {
         const token = tokenBought.get(user) || 0;
         if (token > 0) {
-            const averagePrice = Math.floor(amountCommit / token);
+            const averagePrice = Math.floor(token * 10 ** 18 / amountCommit);
             const weight = Math.floor(Math.log(token * 10 ** 18) * Math.sqrt(averagePrice));
             weightUsers.set(user, weight);
         }
