@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import { generateSampleData } from "./sample";
 
 const SALE_AMOUNT = 800_000_000;
 const LIQUIDITY_AMOUNT = 200_000_000;
@@ -40,6 +41,13 @@ function App() {
 		Number(virtualBaseAmount) * (SALE_AMOUNT + Number(virtualQuoteAmount))
 	);
 	const [tokenSaleLeft, setTokenSaleLeft] = useState<number>(SALE_AMOUNT);
+	const [sampleData, setSampleData] = useState<{
+		actions: { user: number; type: string; amount: number; amountOut: number; currentRaise: number; tokenLeft: number; }[];
+		refundAmount: { user: number, refund: number, amountCommit: number, tokenBought: number }[];
+	}>({
+		actions: [],
+		refundAmount: [],
+	});
 
 	useEffect(() => {
 		setVirtualQuoteAmount(
@@ -62,6 +70,16 @@ function App() {
 		const amountOut = calculateAmountOut(K, Number(targetRaiseAmount) - Number(currentRaise), Number(currentRaise), Number(virtualBaseAmount), Number(virtualQuoteAmount));
 		setCanCoverCurve(amountOut >= tokenSaleLeft);
 	}, [amountOut, virtualQuoteAmount, currentRaise, virtualBaseAmount, K, tokenSaleLeft]);
+
+	useEffect(() => {
+		setSampleData(generateSampleData({
+			targetRaise: Number(targetRaiseAmount),
+			virtualBase: Number(virtualBaseAmount),
+			virtualQuote: Number(virtualQuoteAmount),
+			numberOfUsers: 10,
+		}));
+	}, [targetRaiseAmount, virtualBaseAmount, virtualQuoteAmount]);
+
 
 	const progress = (Number(currentRaise) / Number(targetRaiseAmount)) * 100 || 0;
 
@@ -142,7 +160,55 @@ function App() {
 				<p>Token sale left: {tokenSaleLeft}</p>
 				<p>Last bonding curve price: 1 x = {Math.floor(Number(virtualQuoteAmount) / (Number(targetRaiseAmount) + Number(virtualBaseAmount)))} y</p>
 				<p>Listing price: 1 x = {Math.floor(Number(LIQUIDITY_AMOUNT) / (Number(targetRaiseAmount)))} y</p>
-		</div>
+			</div>
+			<div>
+				<h2>Sample Data</h2>
+				<table className="styled-table">
+					<thead>
+						<tr>
+							<th>User</th>
+							<th>Type</th>
+							<th>Amount</th>
+							<th>Amount Out</th>
+							<th>Current Raise</th>
+							<th>Token Left</th>
+						</tr>
+					</thead>
+					<tbody>
+						{sampleData.actions.map((data, index) => (
+							<tr key={index}>
+								<td>{data.user}</td>
+								<td>{data.type}</td>	
+								<td>{data.amount}</td>
+								<td>{data.amountOut}</td>
+								<td>{data.currentRaise}</td>
+								<td>{data.tokenLeft}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+				<table className="styled-table">
+					<thead>
+						<tr>
+							<th>User</th>
+							<th>Refund BNB</th>
+							<th>Token</th>
+							<th>BNB Bought</th>
+						</tr>
+					</thead>
+					<tbody>
+						{sampleData.refundAmount.map((data, index) => (
+							<tr key={index}>
+								<td>{data.user}</td>
+								<td>{data.refund}</td>
+								<td>{data.amountCommit}</td>
+								<td>{data.tokenBought}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+
 		</div>
 	);
 }
