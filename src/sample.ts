@@ -24,6 +24,7 @@ export const generateSampleData = ({
     const actions = [];
     let index = 0;
     for (let i = 0; i < numberOfUsers; i ++) {
+
         let newBuy = true;
         if (currentRaise == targetRaise) {
             newBuy = false;
@@ -81,11 +82,12 @@ export const generateSampleData = ({
     }
     // loop the map and calculate the average price
     const weightUsers: Map<number, number> = new Map();
+    const meanAvgPrice = currentRaise * 1e18 / (SALE_AMOUNT - tokenLeft);
     for (const [user, amountCommit] of commit) {
         const token = tokenBought.get(user) || 0;
         if (token > 0) {
-            const averagePrice = Math.floor(token * 10 ** 18 / amountCommit);
-            const weight = Math.floor(token * Math.sqrt(averagePrice));
+            const averagePrice = token * 10 ** 18 / amountCommit;
+            const weight = Math.floor(token * averagePrice * 1e18 / meanAvgPrice);
             weightUsers.set(user, weight);
         }
     }

@@ -27,10 +27,10 @@ function calculateAmountOut(
 }
 
 function App() {
-	const [virtualBaseAmount, setVirtualBaseAmount] = useState<string>("10");
+	const [virtualBaseAmount, setVirtualBaseAmount] = useState<string>("9");
 	const [currentRaise, setCurrentRaise] = useState<string>("0");
 	const [amountIn, setAmountIn] = useState<string>("0");
-	const [targetRaiseAmount, setTargetRaiseAmount] = useState<string>("10");
+	const [targetRaiseAmount, setTargetRaiseAmount] = useState<string>("24");
 	const [virtualQuoteAmount, setVirtualQuoteAmount] = useState<string>(
 		calculateVirtualQuoteAmount(Number(virtualBaseAmount), Number(targetRaiseAmount)).toString()
 	);
@@ -48,6 +48,7 @@ function App() {
 		actions: [],
 		refundAmount: [],
 	});
+	const [numberOfUsers, setNumberOfUsers] = useState<number>(20);
 
 	useEffect(() => {
 		setVirtualQuoteAmount(
@@ -76,9 +77,9 @@ function App() {
 			targetRaise: Number(targetRaiseAmount),
 			virtualBase: Number(virtualBaseAmount),
 			virtualQuote: Number(virtualQuoteAmount),
-			numberOfUsers: 20,
+			numberOfUsers: numberOfUsers,
 		}));
-	}, [targetRaiseAmount, virtualBaseAmount, virtualQuoteAmount]);
+	}, [targetRaiseAmount, virtualBaseAmount, virtualQuoteAmount, numberOfUsers]);
 
 
 	const progress = (Number(currentRaise) / Number(targetRaiseAmount)) * 100 || 0;
@@ -163,6 +164,9 @@ function App() {
 			</div>
 			<div>
 				<h2>Sample Data</h2>
+				{/* number of actions */}
+				<p>Number of actions: {sampleData.actions.length}</p>
+				<input type="number" value={numberOfUsers} onChange={(e) => setNumberOfUsers(Number(e.target.value))} />
 				<table className="styled-table">
 					<thead>
 						<tr>
